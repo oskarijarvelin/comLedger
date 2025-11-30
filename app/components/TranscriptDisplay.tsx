@@ -53,15 +53,15 @@ export default function TranscriptDisplay({ t, transcripts, partialTranscript, h
           }}>
             ⚡ {t.realtime}
           </div>
-          <p style={{ 
+          <div style={{ 
             margin: 0, 
             fontStyle: "italic", 
             color: "var(--foreground)",
             fontSize: "1.3rem",
             lineHeight: "1.6",
           }}>
-            {partialTranscript}
-          </p>
+            {applyHighlights(partialTranscript, highlightRules, partialMatchHighlight, t.partialMatchTooltip)}
+          </div>
         </section>
       )}
 
@@ -138,7 +138,7 @@ export default function TranscriptDisplay({ t, transcripts, partialTranscript, h
                     fontSize: "1.2rem",
                     lineHeight: "1.7",
                   }}>
-                    {transcript.text}
+                    {applyHighlights(transcript.text, highlightRules, partialMatchHighlight, t.partialMatchTooltip)}
                   </div>
                 </li>
               ))}
