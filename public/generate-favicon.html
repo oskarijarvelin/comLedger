@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Favicon Generator for comLedger</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0a0a0a;
+      color: #ededed;
+    }
+    canvas {
+      border: 2px solid #444;
+      margin: 10px;
+      image-rendering: pixelated;
+    }
+    .preview {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    button {
+      background: #9C27B0;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover {
+      background: #7B1FA2;
+    }
+    .instructions {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎤 comLedger Favicon Generator</h1>
+  <p>Generate favicon files from SVG for the comLedger application</p>
+  
+  <div class="preview">
+    <div>
+      <h3>16x16</h3>
+      <canvas id="canvas16" width="16" height="16"></canvas>
+    </div>
+    <div>
+      <h3>32x32</h3>
+      <canvas id="canvas32" width="32" height="32"></canvas>
+    </div>
+    <div>
+      <h3>180x180 (Apple)</h3>
+      <canvas id="canvas180" width="180" height="180"></canvas>
+    </div>
+  </div>
+
+  <div>
+    <button onclick="downloadPNG(16)">Download 16x16 PNG</button>
+    <button onclick="downloadPNG(32)">Download 32x32 PNG</button>
+    <button onclick="downloadPNG(180)">Download 180x180 PNG (Apple)</button>
+  </div>
+
+  <div class="instructions">
+    <h3>Instructions:</h3>
+    <ol>
+      <li>Click the buttons above to download PNG files</li>
+      <li>Rename files:
+        <ul>
+          <li>16x16 → <code>favicon-16x16.png</code></li>
+          <li>32x32 → <code>favicon-32x32.png</code></li>
+          <li>180x180 → <code>apple-touch-icon.png</code></li>
+        </ul>
+      </li>
+      <li>Place all files in <code>public/</code> folder</li>
+      <li>For .ico file, use an online converter or tool to combine 16x16 and 32x32 PNGs into <code>favicon.ico</code></li>
+    </ol>
+  </div>
+
+  <script>
+    const svgString = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#2196F3;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r="48" fill="url(#bg)"/>
+        <g fill="white">
+          <rect x="42" y="25" width="16" height="24" rx="8" fill="white"/>
+          <path d="M 50 55 Q 35 55 35 65" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <line x1="35" y1="65" x2="65" y2="65" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <line x1="68" y1="35" x2="76" y2="35" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="68" y1="42" x2="80" y2="42" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="68" y1="49" x2="76" y2="49" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+      </svg>
+    `;
+
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      
+      img.onload = function() {
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+      };
+      
+      img.src = url;
+    }
+
+    // Draw on all canvases
+    drawIcon(document.getElementById('canvas16'), 16);
+    drawIcon(document.getElementById('canvas32'), 32);
+    drawIcon(document.getElementById('canvas180'), 180);
+
+    function downloadPNG(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `favicon-${size}x${size}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+  </script>
+</body>
+</html>

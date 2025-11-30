@@ -36,8 +36,34 @@ export default function Header({ t, isConnected, onToggle, onSettingsClick }: He
         fontWeight: "600",
         color: "var(--foreground)",
         margin: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
       }}>
-        🎙️ <span className="title-text">{t.title}</span>
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 100 100"
+          width="32"
+          height="32"
+          style={{ flexShrink: 0 }}
+        >
+          <defs>
+            <linearGradient id="header-icon-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#9C27B0', stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: '#2196F3', stopOpacity: 1 }} />
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="48" fill="url(#header-icon-bg)"/>
+          <g fill="white">
+            <rect x="42" y="25" width="16" height="24" rx="8" fill="white"/>
+            <path d="M 50 55 Q 35 55 35 65" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round"/>
+            <line x1="35" y1="65" x2="65" y2="65" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+            <line x1="68" y1="35" x2="76" y2="35" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="68" y1="42" x2="80" y2="42" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="68" y1="49" x2="76" y2="49" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+          </g>
+        </svg>
+        <span className="title-text">{t.title}</span>
       </h1>
       
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
