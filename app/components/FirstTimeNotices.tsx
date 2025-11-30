@@ -127,7 +127,7 @@ export default function FirstTimeNotices({ t, onSettingsClick }: FirstTimeNotice
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <button
               onClick={() => {
-                window.open('https://elevenlabs.io/app/speech-synthesis', '_blank', 'noopener,noreferrer');
+                window.open('https://elevenlabs.io/app/developers/api-keys', '_blank', 'noopener,noreferrer');
               }}
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',

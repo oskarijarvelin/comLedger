@@ -61,7 +61,7 @@ export default function ApiKeyModal({
           marginBottom: "1.5rem"
         }}>
           <a 
-            href="https://elevenlabs.io/app/settings/api-keys" 
+            href="https://elevenlabs.io/app/developers/api-keys" 
             target="_blank" 
             rel="noopener noreferrer"
             style={{
