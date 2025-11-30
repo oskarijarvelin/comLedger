@@ -520,7 +520,7 @@ export default function Page() {
         }}
       >
         {/* First Time User Notices */}
-        <FirstTimeNotices t={t} />
+        <FirstTimeNotices t={t} onSettingsClick={() => setShowSettings(true)} />
 
         {/* Notification */}
         {notification && (

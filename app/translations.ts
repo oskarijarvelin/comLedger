@@ -69,6 +69,10 @@ export interface Translations {
   partialMatchTooltip: string;
   clearTranscripts: string;
   viewOnGithub: string;
+  firstTimeNotice0Title: string;
+  firstTimeNotice0Text: string;
+  firstTimeNotice0GetKey: string;
+  firstTimeNotice0OpenSettings: string;
   firstTimeNotice1Title: string;
   firstTimeNotice1Text: string;
   firstTimeNotice2Title: string;
@@ -151,6 +155,10 @@ export const translations: Record<Language, Translations> = {
     partialMatchTooltip: "Partial match",
     clearTranscripts: "Clear All Transcripts",
     viewOnGithub: "View on GitHub",
+    firstTimeNotice0Title: "Get Your Free API Key",
+    firstTimeNotice0Text: "ElevenLabs offers free API keys with generous usage limits. Get your personal key to start transcribing!",
+    firstTimeNotice0GetKey: "Get Free API Key",
+    firstTimeNotice0OpenSettings: "Open Settings",
     firstTimeNotice1Title: "Privacy Notice",
     firstTimeNotice1Text: "Transcriptions are not saved on any server. All data stays in your browser.",
     firstTimeNotice2Title: "Data Persistence",
@@ -231,6 +239,10 @@ export const translations: Record<Language, Translations> = {
     partialMatchTooltip: "Osaosuma",
     clearTranscripts: "Tyhjennä kaikki transkriptiot",
     viewOnGithub: "Näytä GitHubissa",
+    firstTimeNotice0Title: "Hanki ilmainen API-avain",
+    firstTimeNotice0Text: "ElevenLabs tarjoaa ilmaisia API-avaimia n. 15 minuutin käännösrajalla. Hanki henkilökohtainen avaimesi aloittaaksesi transkriptoinnin!",
+    firstTimeNotice0GetKey: "Hanki ilmainen API-avain",
+    firstTimeNotice0OpenSettings: "Avaa asetukset",
     firstTimeNotice1Title: "Tietosuojailmoitus",
     firstTimeNotice1Text: "Transkriptioita ei tallenneta palvelimelle. Kaikki data pysyy selaimessasi.",
     firstTimeNotice2Title: "Datan säilyvyys",
