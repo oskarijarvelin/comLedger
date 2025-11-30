@@ -1,4 +1,6 @@
 import { Translations, Language } from '../translations';
+import { HighlightRule } from '../hooks/useSettings';
+import HighlightSettings from './HighlightSettings';
 
 interface SettingsPanelProps {
   t: Translations;
@@ -17,6 +19,14 @@ interface SettingsPanelProps {
   transcriptsCount: number;
   onExportPDF: () => void;
   onExportCSV: () => void;
+  onClearTranscripts: () => void;
+  highlightRules: HighlightRule[];
+  partialMatchHighlight: boolean;
+  onAddHighlight: (word: string, color: string) => void;
+  onRemoveHighlight: (id: string) => void;
+  onTogglePartialMatch: () => void;
+  newestFirst: boolean;
+  onToggleNewestFirst: () => void;
 }
 
 /**
@@ -40,6 +50,14 @@ export default function SettingsPanel({
   transcriptsCount,
   onExportPDF,
   onExportCSV,
+  onClearTranscripts,
+  highlightRules,
+  partialMatchHighlight,
+  onAddHighlight,
+  onRemoveHighlight,
+  onTogglePartialMatch,
+  newestFirst,
+  onToggleNewestFirst,
 }: SettingsPanelProps) {
   return (
     <section 
@@ -120,6 +138,60 @@ export default function SettingsPanel({
                 }}
               >
                 🇫🇮 Suomi
+              </button>
+            </div>
+          </div>
+
+          {/* Transcript Order Selector */}
+          <div style={{
+            padding: "0.5rem",
+            backgroundColor: "rgba(0, 0, 0, 0.2)",
+            borderRadius: "6px",
+            marginTop: "0.75rem"
+          }}>
+            <div style={{ 
+              color: "var(--foreground)", 
+              fontWeight: "500",
+              marginBottom: "0.5rem"
+            }}>
+              {t.transcriptOrder}
+            </div>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button
+                onClick={() => !newestFirst && onToggleNewestFirst()}
+                disabled={newestFirst}
+                style={{
+                  flex: 1,
+                  padding: "0.5rem",
+                  fontSize: "0.9rem",
+                  cursor: newestFirst ? "default" : "pointer",
+                  backgroundColor: newestFirst ? "#9C27B0" : "rgba(255, 255, 255, 0.1)",
+                  color: newestFirst ? "white" : "var(--foreground)",
+                  border: newestFirst ? "none" : "1px solid rgba(255, 255, 255, 0.2)",
+                  borderRadius: "6px",
+                  fontWeight: newestFirst ? "600" : "400",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                ⬇️ {t.newestFirst}
+              </button>
+              <button
+                onClick={() => newestFirst && onToggleNewestFirst()}
+                disabled={!newestFirst}
+                style={{
+                  flex: 1,
+                  padding: "0.5rem",
+                  fontSize: "0.9rem",
+                  cursor: !newestFirst ? "default" : "pointer",
+                  backgroundColor: !newestFirst ? "#9C27B0" : "rgba(255, 255, 255, 0.1)",
+                  color: !newestFirst ? "white" : "var(--foreground)",
+                  border: !newestFirst ? "none" : "1px solid rgba(255, 255, 255, 0.2)",
+                  borderRadius: "6px",
+                  fontWeight: !newestFirst ? "600" : "400",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                ⬆️ {t.oldestFirst}
               </button>
             </div>
           </div>
@@ -408,7 +480,48 @@ export default function SettingsPanel({
               📊 {t.exportCSV}
             </button>
           </div>
+          
+          {/* Clear All Button */}
+          {transcriptsCount > 0 && (
+            <button
+              onClick={onClearTranscripts}
+              style={{
+                marginTop: "0.75rem",
+                width: "100%",
+                padding: "0.5rem 1rem",
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                backgroundColor: "rgba(244, 67, 54, 0.1)",
+                color: "#f44336",
+                border: "1px solid rgba(244, 67, 54, 0.3)",
+                borderRadius: "6px",
+                fontWeight: "500",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(244, 67, 54, 0.2)";
+                e.currentTarget.style.borderColor = "rgba(244, 67, 54, 0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(244, 67, 54, 0.1)";
+                e.currentTarget.style.borderColor = "rgba(244, 67, 54, 0.3)";
+              }}
+            >
+              🗑️ {t.clearTranscripts}
+            </button>
+          )}
         </div>
+
+        {/* Highlight Settings */}
+        <HighlightSettings
+          t={t}
+          language={language}
+          highlightRules={highlightRules}
+          partialMatchHighlight={partialMatchHighlight}
+          onAddHighlight={onAddHighlight}
+          onRemoveHighlight={onRemoveHighlight}
+          onTogglePartialMatch={onTogglePartialMatch}
+        />
       </div>
     </section>
   );

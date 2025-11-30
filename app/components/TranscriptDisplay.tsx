@@ -1,4 +1,6 @@
 import { Translations } from '../translations';
+import { HighlightRule } from '../hooks/useSettings';
+import { applyHighlights } from '../utils/highlightUtils';
 
 interface Transcript {
   id: string;
@@ -10,6 +12,9 @@ interface TranscriptDisplayProps {
   t: Translations;
   transcripts: Transcript[];
   partialTranscript?: string;
+  highlightRules: HighlightRule[];
+  partialMatchHighlight: boolean;
+  newestFirst: boolean;
 }
 
 /**
@@ -17,7 +22,12 @@ interface TranscriptDisplayProps {
  * Partial transcripts shown in orange (temporary)
  * Confirmed transcripts shown in blue (permanent)
  */
-export default function TranscriptDisplay({ t, transcripts, partialTranscript }: TranscriptDisplayProps) {
+export default function TranscriptDisplay({ t, transcripts, partialTranscript, highlightRules, partialMatchHighlight, newestFirst }: TranscriptDisplayProps) {
+  // Order transcripts based on user preference
+  // transcripts array is in oldest-first order (new items appended to end)
+  // So we reverse for newest-first, keep as-is for oldest-first
+  const orderedTranscripts = newestFirst ? [...transcripts].reverse() : transcripts;
+  
   return (
     <>
       {/* Partial (Real-time) Transcript */}
@@ -92,7 +102,7 @@ export default function TranscriptDisplay({ t, transcripts, partialTranscript }:
             </div>
           ) : (
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {transcripts.map((transcript) => (
+              {orderedTranscripts.map((transcript) => (
                 <li 
                   key={transcript.id} 
                   style={{ 

@@ -54,11 +54,36 @@ export interface Translations {
   browserNotSupported: string;
   microphonePermissionDenied: string;
   useModernBrowser: string;
+  highlightSettings: string;
+  addHighlight: string;
+  word: string;
+  color: string;
+  highlightAdded: string;
+  highlightRemoved: string;
+  wordPlaceholder: string;
+  selectColor: string;
+  partialMatching: string;
+  partialMatchingDesc: string;
+  partialMatchingEnabled: string;
+  partialMatchingDisabled: string;
+  partialMatchTooltip: string;
+  clearTranscripts: string;
+  viewOnGithub: string;
+  firstTimeNotice1Title: string;
+  firstTimeNotice1Text: string;
+  firstTimeNotice2Title: string;
+  firstTimeNotice2Text: string;
+  dismiss: string;
+  reloadWarning: string;
+  transcriptOrder: string;
+  newestFirst: string;
+  oldestFirst: string;
+  transcriptOrderChanged: string;
 }
 
 export const translations: Record<Language, Translations> = {
   en: {
-    title: "Realtime Scribe",
+    title: "comLedger",
     stop: "Stop",
     start: "Start",
     settings: "Settings",
@@ -111,9 +136,34 @@ export const translations: Record<Language, Translations> = {
     browserNotSupported: "Your browser does not support audio recording",
     microphonePermissionDenied: "Microphone permission denied. Please allow microphone access.",
     useModernBrowser: "Please use a modern browser (Chrome, Safari, Firefox)",
+    highlightSettings: "Highlight Settings",
+    addHighlight: "Add Highlight",
+    word: "Word",
+    color: "Color",
+    highlightAdded: "Highlight added",
+    highlightRemoved: "Highlight removed",
+    wordPlaceholder: "Enter word to highlight",
+    selectColor: "Select color",
+    partialMatching: "Partial Matching",
+    partialMatchingDesc: "Highlight word stems in inflected forms",
+    partialMatchingEnabled: "Partial matching enabled",
+    partialMatchingDisabled: "Partial matching disabled",
+    partialMatchTooltip: "Partial match",
+    clearTranscripts: "Clear All Transcripts",
+    viewOnGithub: "View on GitHub",
+    firstTimeNotice1Title: "Privacy Notice",
+    firstTimeNotice1Text: "Transcriptions are not saved on any server. All data stays in your browser.",
+    firstTimeNotice2Title: "Data Persistence",
+    firstTimeNotice2Text: "Transcriptions will disappear if you reload the page. Download them before closing!",
+    dismiss: "Dismiss",
+    reloadWarning: "You have unsaved transcriptions. They will be lost if you reload the page. Download them first!",
+    transcriptOrder: "Transcript Order",
+    newestFirst: "Newest First",
+    oldestFirst: "Oldest First",
+    transcriptOrderChanged: "Transcript order changed",
   },
   fi: {
-    title: "Reaaliaikainen litterointi",
+    title: "comLedger",
     stop: "Lopeta",
     start: "Aloita",
     settings: "Asetukset",
@@ -166,5 +216,30 @@ export const translations: Record<Language, Translations> = {
     browserNotSupported: "Selaimesi ei tue äänentallennusta",
     microphonePermissionDenied: "Mikrofonin käyttöoikeus evätty. Salli mikrofonin käyttö.",
     useModernBrowser: "Käytä modernia selainta (Chrome, Safari, Firefox)",
+    highlightSettings: "Korostusasetukset",
+    addHighlight: "Lisää korostus",
+    word: "Sana",
+    color: "Väri",
+    highlightAdded: "Korostus lisätty",
+    highlightRemoved: "Korostus poistettu",
+    wordPlaceholder: "Kirjoita korostettava sana",
+    selectColor: "Valitse väri",
+    partialMatching: "Osaosumien korostus",
+    partialMatchingDesc: "Korosta sanan vartalo taivutetuista muodoista",
+    partialMatchingEnabled: "Osaosumien korostus päällä",
+    partialMatchingDisabled: "Osaosumien korostus pois",
+    partialMatchTooltip: "Osaosuma",
+    clearTranscripts: "Tyhjennä kaikki transkriptiot",
+    viewOnGithub: "Näytä GitHubissa",
+    firstTimeNotice1Title: "Tietosuojailmoitus",
+    firstTimeNotice1Text: "Transkriptioita ei tallenneta palvelimelle. Kaikki data pysyy selaimessasi.",
+    firstTimeNotice2Title: "Datan säilyvyys",
+    firstTimeNotice2Text: "Transkriptiot katoavat sivun päivittäessä. Muista ladata ne ennen sivun sulkemista!",
+    dismiss: "Sulje",
+    reloadWarning: "Sinulla on tallentamattomia transkriptioita. Ne katoavat sivun päivittäessä. Lataa ne ensin!",
+    transcriptOrder: "Transkriptioiden järjestys",
+    newestFirst: "Uusin ylimpänä",
+    oldestFirst: "Vanhin ylimpänä",
+    transcriptOrderChanged: "Transkriptioiden järjestys vaihdettu",
   }
 };

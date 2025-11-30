@@ -1,15 +1,49 @@
 /**
- * Utility functions for exporting transcripts to different formats
+ * Export Utilities for Transcript Management
+ * 
+ * Provides functions to export transcripts in multiple formats:
+ * - CSV: Excel-compatible with UTF-8 BOM encoding
+ * - PDF: Print-ready format with highlights and timestamps
+ * 
+ * @module exportUtils
  */
 
+import { HighlightRule } from '../hooks/useSettings';
+import { applyHighlightsToHTML } from './highlightUtils';
+
+/**
+ * Represents a single transcript entry with timestamp
+ */
 interface TranscriptItem {
   timestamp: string;
   text: string;
 }
 
 /**
- * Exports transcripts as CSV file
- * Includes UTF-8 BOM for proper encoding in Excel
+ * Export Transcripts as CSV File
+ * 
+ * Creates a CSV file with UTF-8 BOM (Byte Order Mark) for proper encoding
+ * in Microsoft Excel and other spreadsheet applications.
+ * 
+ * CSV Format:
+ * - Header row: "Timestamp,Text"
+ * - Each transcript as a row with timestamp and text
+ * - Text fields are quoted and escaped for CSV safety
+ * 
+ * Filename Format: `{filename}_{YYYY-MM-DD}.csv`
+ * 
+ * @param transcripts - Array of transcript items to export
+ * @param filename - Base filename (default: 'transcripts')
+ * 
+ * @example
+ * ```typescript
+ * const transcripts = [
+ *   { timestamp: '14:30:45', text: 'Hello world' },
+ *   { timestamp: '14:30:50', text: 'Second transcript' }
+ * ];
+ * exportAsCSV(transcripts, 'meeting_notes');
+ * // Downloads: meeting_notes_2025-11-30.csv
+ * ```
  */
 export function exportAsCSV(transcripts: TranscriptItem[], filename: string = 'transcripts') {
   // Create CSV content
@@ -37,15 +71,59 @@ export function exportAsCSV(transcripts: TranscriptItem[], filename: string = 't
 }
 
 /**
- * Exports transcripts as PDF via print dialog
- * Opens a new window with formatted HTML for printing
+ * Export Transcripts as PDF via Browser Print Dialog
+ * 
+ * Opens a new browser window with formatted HTML content optimized for printing.
+ * User can save as PDF using browser's print dialog (Ctrl+P -> Save as PDF).
+ * 
+ * Features:
+ * - Professional layout with header and metadata
+ * - Preserves text highlights with colors (print-color-adjust CSS)
+ * - Timestamped filename for easy organization
+ * - Print-optimized styling (margins, page breaks, fonts)
+ * - Partial match indicators preserved in PDF
+ * 
+ * Filename Format: `comLedger_{YYYY-MM-DD}_{HH-MM-SS}.pdf`
+ * 
+ * Technical Details:
+ * - Uses window.open() to create print preview
+ * - Automatically triggers print dialog on load
+ * - Closes preview window after printing
+ * - Requires popup permission from browser
+ * 
+ * @param transcripts - Array of transcript items to export
+ * @param title - Application title for PDF header
+ * @param confirmedTitle - Section title for transcripts
+ * @param dateLabel - Label for date field (localized)
+ * @param totalLabel - Label for transcript count (localized)
+ * @param highlightRules - Array of highlight rules to apply
+ * @param partialMatchHighlight - Enable partial word matching
+ * @returns true if print window opened successfully, false if blocked
+ * 
+ * @example
+ * ```typescript
+ * const success = exportAsPDF(
+ *   transcripts,
+ *   'comLedger',
+ *   'Confirmed Transcripts',
+ *   'Date',
+ *   'Total Transcripts',
+ *   highlightRules,
+ *   true
+ * );
+ * if (!success) {
+ *   alert('Please allow popups to export PDF');
+ * }
+ * ```
  */
 export function exportAsPDF(
   transcripts: TranscriptItem[], 
   title: string, 
   confirmedTitle: string,
   dateLabel: string = 'Date',
-  totalLabel: string = 'Total Transcripts'
+  totalLabel: string = 'Total Transcripts',
+  highlightRules: HighlightRule[] = [],
+  partialMatchHighlight: boolean = true
 ): boolean {
   const printWindow = window.open('', '', 'width=800,height=600');
   if (!printWindow) {
@@ -58,13 +136,24 @@ export function exportAsPDF(
     day: 'numeric' 
   });
 
+  // Generate timestamp for filename (YYYY-MM-DD_HH-MM-SS format)
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+  const filename = `comLedger_${timestamp}`;
+
   // Generate HTML content for PDF
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="utf-8">
-      <title>${confirmedTitle} - ${currentDate}</title>
+      <title>${filename}</title>
       <style>
         @page {
           margin: 2cm;
@@ -106,9 +195,15 @@ export function exportAsPDF(
           font-size: 14px;
           line-height: 1.8;
         }
+        /* Print-specific styles to ensure colors show */
         @media print {
           body {
             padding: 0;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
           }
         }
       </style>
@@ -122,7 +217,7 @@ export function exportAsPDF(
       ${transcripts.map((item, index) => `
         <div class="transcript">
           <div class="timestamp">🕒 ${item.timestamp}</div>
-          <div class="text">${item.text}</div>
+          <div class="text">${applyHighlightsToHTML(item.text, highlightRules, partialMatchHighlight)}</div>
         </div>
       `).join('')}
     </body>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useScribe } from "@elevenlabs/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { translations } from "./translations";
 import { useSettings } from "./hooks/useSettings";
 import { useMicrophones } from "./hooks/useMicrophones";
@@ -13,10 +13,14 @@ import TranscriptDisplay from "./components/TranscriptDisplay";
 import Footer from "./components/Footer";
 import SettingsPanel from "./components/SettingsPanel";
 import ApiKeyModal from "./components/ApiKeyModal";
+import FirstTimeNotices from "./components/FirstTimeNotices";
 
 /**
- * Fetches a single-use authentication token from the server
- * Optionally uses a custom API key if provided
+ * Fetches a single-use authentication token from the ElevenLabs API
+ * 
+ * @param customApiKey - Optional custom API key provided by user through UI
+ * @returns Promise resolving to authentication token
+ * @throws Error if token fetch fails
  */
 async function fetchTokenFromServer(customApiKey?: string): Promise<string> {
   const response = await fetch("/api/token", {
@@ -35,8 +39,20 @@ async function fetchTokenFromServer(customApiKey?: string): Promise<string> {
 }
 
 /**
- * Main application component
- * Handles real-time speech-to-text transcription using ElevenLabs Scribe v2
+ * Main Application Component
+ * 
+ * comLedger - Professional real-time speech-to-text transcription application
+ * 
+ * Features:
+ * - Real-time transcription with ElevenLabs Scribe v2 API
+ * - Smart word highlighting with partial matching for inflected forms
+ * - Bilingual interface (English/Finnish)
+ * - Export to PDF and CSV with highlights preserved
+ * - WCAG 2.1 AA accessibility compliance
+ * - Auto-save of partial transcripts on disconnect
+ * - Persistent settings via localStorage
+ * 
+ * @component
  */
 export default function Page() {
   // UI state
@@ -54,6 +70,9 @@ export default function Page() {
     text: string;
     timestamp: string;
   }>>([]);
+
+  // Reference to store the latest partial transcript
+  const lastPartialTranscriptRef = useRef<string>("");
 
   // Custom hooks for settings and microphone management
   const settings = useSettings();
@@ -87,6 +106,34 @@ export default function Page() {
     },
     onDisconnect: () => {
       console.log("❌ Disconnected");
+      
+      // Save partial transcript if it exists when disconnecting
+      const partialText = lastPartialTranscriptRef.current;
+      if (partialText && partialText.trim()) {
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString('fi-FI', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        
+        setTranscriptsWithTimestamps(prev => {
+          // Check if this partial transcript is already saved
+          if (prev.some(t => t.text === partialText)) {
+            return prev;
+          }
+          // Add the partial transcript to confirmed transcripts
+          console.log("📝 Saving partial transcript on disconnect:", partialText);
+          return [...prev, {
+            id: `${Date.now()}-${Math.random()}`,
+            text: partialText,
+            timestamp
+          }];
+        });
+        
+        // Clear the reference after saving
+        lastPartialTranscriptRef.current = "";
+      }
     },
     onError: (error) => {
       console.error("🚨 Error:", error);
@@ -99,6 +146,8 @@ export default function Page() {
     },
     onPartialTranscript: (data) => {
       console.log("⚡ Partial:", data.text);
+      // Store the latest partial transcript in ref
+      lastPartialTranscriptRef.current = data.text;
     },
     onCommittedTranscriptWithTimestamps: (data) => {
       console.log("✅ Committed:", data.text);
@@ -108,6 +157,9 @@ export default function Page() {
         minute: '2-digit',
         second: '2-digit'
       });
+      
+      // Clear the partial transcript ref since it's now committed
+      lastPartialTranscriptRef.current = "";
       
       // Add to transcripts list, avoiding duplicates
       setTranscriptsWithTimestamps(prev => {
@@ -207,6 +259,24 @@ export default function Page() {
   };
 
   /**
+   * Warn user before reload/close if there are unsaved transcripts
+   */
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (transcriptsWithTimestamps.length > 0) {
+        e.preventDefault();
+        // Modern browsers display their own message, but we set returnValue for compatibility
+        const message = t.reloadWarning;
+        e.returnValue = message;
+        return message;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [transcriptsWithTimestamps.length, t.reloadWarning]);
+
+  /**
    * Clear API key handler
    */
   const handleClearApiKey = () => {
@@ -286,7 +356,12 @@ export default function Page() {
       return;
     }
 
-    exportAsCSV(transcriptsWithTimestamps, 'transcripts');
+    // transcripts array is oldest-first, reverse for newest-first export
+    const orderedTranscripts = settings.newestFirst 
+      ? [...transcriptsWithTimestamps].reverse()
+      : transcriptsWithTimestamps;
+    
+    exportAsCSV(orderedTranscripts, 'transcripts');
     setNotification({
       message: t.transcriptsExported,
       type: 'success'
@@ -307,12 +382,19 @@ export default function Page() {
       return;
     }
 
+    // transcripts array is oldest-first, reverse for newest-first export
+    const orderedTranscripts = settings.newestFirst 
+      ? [...transcriptsWithTimestamps].reverse()
+      : transcriptsWithTimestamps;
+
     const success = exportAsPDF(
-      transcriptsWithTimestamps, 
+      orderedTranscripts, 
       t.title, 
       t.confirmedTranscripts,
       t.pdfDate,
-      t.pdfTotalTranscripts
+      t.pdfTotalTranscripts,
+      settings.highlightRules,
+      settings.partialMatchHighlight
     );
     if (!success) {
       setNotification({
@@ -328,6 +410,72 @@ export default function Page() {
       type: 'success'
     });
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  /**
+   * Add highlight rule handler
+   */
+  const handleAddHighlight = (word: string, color: string) => {
+    settings.addHighlightRule(word, color);
+    setNotification({
+      message: t.highlightAdded,
+      type: 'success'
+    });
+    setTimeout(() => setNotification(null), 2000);
+  };
+
+  /**
+   * Remove highlight rule handler
+   */
+  const handleRemoveHighlight = (id: string) => {
+    settings.removeHighlightRule(id);
+    setNotification({
+      message: t.highlightRemoved,
+      type: 'info'
+    });
+    setTimeout(() => setNotification(null), 2000);
+  };
+
+  /**
+   * Clear all transcripts handler
+   */
+  const handleClearTranscripts = () => {
+    if (window.confirm(t.language === 'en' 
+      ? 'Are you sure you want to clear all transcripts? This cannot be undone.' 
+      : 'Haluatko varmasti tyhjentää kaikki transkriptiot? Tätä ei voi perua.')) {
+      setTranscriptsWithTimestamps([]);
+      setNotification({
+        message: t.language === 'en' ? 'All transcripts cleared' : 'Kaikki transkriptiot tyhjennetty',
+        type: 'info'
+      });
+      setTimeout(() => setNotification(null), 2000);
+    }
+  };
+
+  /**
+   * Toggle partial match highlight handler
+   */
+  const handleTogglePartialMatch = () => {
+    const newValue = !settings.partialMatchHighlight;
+    settings.updatePartialMatchHighlight(newValue);
+    setNotification({
+      message: newValue ? t.partialMatchingEnabled : t.partialMatchingDisabled,
+      type: 'info'
+    });
+    setTimeout(() => setNotification(null), 2000);
+  };
+
+  /**
+   * Toggle transcript order handler
+   */
+  const handleToggleNewestFirst = () => {
+    const newValue = !settings.newestFirst;
+    settings.updateNewestFirst(newValue);
+    setNotification({
+      message: t.transcriptOrderChanged,
+      type: 'info'
+    });
+    setTimeout(() => setNotification(null), 2000);
   };
 
   /**
@@ -371,6 +519,9 @@ export default function Page() {
           margin: "0 auto",
         }}
       >
+        {/* First Time User Notices */}
+        <FirstTimeNotices t={t} />
+
         {/* Notification */}
         {notification && (
           <Notification
@@ -402,6 +553,14 @@ export default function Page() {
             transcriptsCount={transcriptsWithTimestamps.length}
             onExportPDF={handleExportPDF}
             onExportCSV={handleExportCSV}
+            onClearTranscripts={handleClearTranscripts}
+            highlightRules={settings.highlightRules}
+            partialMatchHighlight={settings.partialMatchHighlight}
+            onAddHighlight={handleAddHighlight}
+            onRemoveHighlight={handleRemoveHighlight}
+            onTogglePartialMatch={handleTogglePartialMatch}
+            newestFirst={settings.newestFirst}
+            onToggleNewestFirst={handleToggleNewestFirst}
           />
         )}
 
@@ -415,6 +574,9 @@ export default function Page() {
           t={t}
           transcripts={transcriptsWithTimestamps}
           partialTranscript={scribe.partialTranscript}
+          highlightRules={settings.highlightRules}
+          partialMatchHighlight={settings.partialMatchHighlight}
+          newestFirst={settings.newestFirst}
         />
       </main>
 
